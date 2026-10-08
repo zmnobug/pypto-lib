@@ -9,6 +9,7 @@
 """Qwen3-14B model and external ABI constants."""
 
 from dataclasses import dataclass
+import os
 
 
 @dataclass(frozen=True)
@@ -97,12 +98,17 @@ class Qwen3Config:
         return self.num_kv_heads * self.q_groups
 
 
+# Set before importing any model kernels so prefill, decode and RoPE agree.
+_QWEN_MAX_SEQ = int(os.environ.get("PTO2_QWEN_MAX_SEQ", "4096"))
+if _QWEN_MAX_SEQ <= 0:
+    raise ValueError("PTO2_QWEN_MAX_SEQ must be positive")
+
 QWEN3_14B = Qwen3Config(
     name="qwen3-14b",
     family="qwen3",
     variant="14b",
     batch_pad=16,
-    max_seq=4096,
+    max_seq=_QWEN_MAX_SEQ,
     num_heads=40,
     num_kv_heads=8,
     head_dim=128,
